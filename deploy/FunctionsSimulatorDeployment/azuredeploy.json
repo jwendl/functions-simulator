@@ -1,0 +1,247 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "eventGridTopicName": {
+      "type": "string",
+      "minLength": 3
+    },
+    "functionsApiAppName": {
+      "type": "string",
+      "minLength": 3
+    },
+    "iotHubName": {
+      "type": "string",
+      "minLength": 3,
+      "metadata": {
+        "description": "Name of the IoT Hub instance to provision."
+      }
+    },
+    "iotHubSkuName": {
+      "type": "string",
+      "allowedValues": [
+        "F1",
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "defaultValue": "F1",
+      "metadata": {
+        "description": "One of the supported SKUs: F1, S1 or S2"
+      }
+    },
+    "iotHubCapacityUnits": {
+      "type": "int",
+      "minValue": 1,
+      "defaultValue": 1,
+      "metadata": {
+        "description": "Number of desired IoT Hub units. Restricted to 1 unit for F1. Can be set up to maximum number allowed for subscription."
+      }
+    }
+  },
+  "variables": {
+    "applicationInsightsLocation": "westus2",
+    "applicationInsightsName": "[concat(parameters('functionsApiAppName'), 'ai')]",
+    "functionsAppServicePlanName": "[concat(parameters('functionsApiAppName'), 'fnasp')]",
+    "eventGridTopicResourceId": "[resourceId(resourceGroup().name, 'Microsoft.EventGrid/topics', parameters('eventGridTopicName'))]",
+    "functionsResourceId": "[resourceId(resourceGroup().name, 'Microsoft.Web/sites', parameters('functionsApiAppName'))]",
+    "d2cMessageRetentionInDaysPeriod": "1",
+    "d2cPartitionCount": "2",
+    "c2dMessagesTTLAsIso8601": "PT1H",
+    "c2dMessagesMaxDeliveryCount": "10",
+    "c2dFeebackMessagesTTLAsIso8601": "PT1H",
+    "c2dFeedbackMessagesMaxDeliveryCount": "10",
+    "c2dFeedbackMessagesLockDurationAsIso8601": "PT60S"
+  },
+  "resources": [
+    {
+      "name": "[parameters('eventGridTopicName')]",
+      "type": "Microsoft.EventGrid/topics",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2018-01-01"
+    },
+    {
+      "name": "[variables('applicationInsightsName')]",
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2014-04-01",
+      "location": "[variables('applicationInsightsLocation')]",
+      "kind": "other",
+      "properties": {
+        "applicationId": "[variables('applicationInsightsName')]"
+      }
+    },
+    {
+      "name": "[variables('functionsAppServicePlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-09-01",
+      "sku": {
+        "name": "Y1",
+        "tier": "Dynamic",
+        "size": "Y1",
+        "family": "Y",
+        "capacity": 0
+      },
+      "kind": "functionapp",
+      "properties": {
+        "workerTierName": null,
+        "adminSiteName": null,
+        "hostingEnvironmentProfile": null,
+        "perSiteScaling": false,
+        "reserved": false,
+        "targetWorkerCount": 0,
+        "targetWorkerSizeId": 0
+      }
+    },
+    {
+      "name": "[parameters('functionsApiAppName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2018-02-01",
+      "kind": "functionapp",
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('functionsAppServicePlanName'))]",
+        "reserved": false
+      },
+      "identity": {
+        "type": "systemAssigned"
+      },
+      "resources": [
+        {
+          "name": "appsettings",
+          "type": "config",
+          "apiVersion": "2014-11-01",
+          "properties": {
+            "FUNCTIONS_EXTENSION_VERSION": "2.0.11651-alpha",
+            "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2014-04-01').InstrumentationKey]",
+            "EventGridTopicEndpoint": "[reference(variables('eventGridTopicResourceId'), '2018-01-01').endpoint]",
+            "EventGridTopicKey": "[listKeys(variables('eventGridTopicResourceId'), '2018-01-01').key1]"
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('functionsApiAppName'))]",
+            "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]"
+          ]
+        }
+      ],
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('functionsAppServicePlanName'))]"
+      ]
+    },
+    {
+      "apiVersion": "2016-02-03",
+      "location": "[resourceGroup().location]",
+      "name": "[parameters('iotHubName')]",
+      "properties": {
+        "eventHubEndpoints": {
+          "events": {
+            "retentionTimeInDays": 1,
+            "partitionCount": "[variables('d2cPartitionCount')]",
+            "partitionIds": [
+              "0",
+              "1"
+            ]
+          },
+          "operationsMonitoringEvents": {
+            "retentionTimeInDays": 1,
+            "partitionCount": "[variables('d2cPartitionCount')]",
+            "partitionIds": [
+              "0",
+              "1"
+            ]
+          }
+        },
+        "routing": {
+          "endpoints": {
+            "serviceBusQueues": [],
+            "serviceBusTopics": [],
+            "eventHubs": []
+          },
+          "routes": [],
+          "fallbackRoute": {
+            "name": "$fallback",
+            "source": "DeviceMessages",
+            "condition": "true",
+            "endpointNames": [
+              "events"
+            ],
+            "isEnabled": true
+          }
+        },
+        "storageEndpoints": {
+          "$default": {
+            "sasTtlAsIso8601": "PT1H",
+            "connectionString": "",
+            "containerName": ""
+          }
+        },
+        "cloudToDevice": {
+          "defaultTtlAsIso8601": "[variables('c2dMessagesTTLAsIso8601')]",
+          "maxDeliveryCount": "[variables('c2dMessagesMaxDeliveryCount')]",
+          "feedback": {
+            "maxDeliveryCount": "[variables('c2dFeedbackMessagesMaxDeliveryCount')]",
+            "ttlAsIso8601": "[variables('c2dFeebackMessagesTTLAsIso8601')]",
+            "lockDurationAsIso8601": "[variables('c2dFeedbackMessagesLockDurationAsIso8601')]"
+          },
+          "operationsMonitoringProperties": {
+            "events": {
+              "None": "None",
+              "Connections": "None",
+              "DeviceTelemetry": "None",
+              "C2DCommands": "None",
+              "DeviceIdentityOperations": "None",
+              "FileUploadOperations": "None"
+            }
+          }
+        },
+        "location": "[resourceGroup().location]"
+      },
+      "sku": {
+        "name": "[parameters('iotHubSkuName')]",
+        "capacity": "[parameters('iotHubCapacityUnits')]"
+      },
+      "type": "Microsoft.Devices/iotHubs"
+    },
+    {
+      "name": "[concat(parameters('eventGridTopicName'), '/Microsoft.EventGrid/RegistrationSubscription')]",
+      "type": "Microsoft.EventGrid/topics/providers/eventSubscriptions",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2018-01-01",
+      "properties": {
+        "destination": {
+          "endpointType": "WebHook",
+          "properties": {
+            "endpointUrl": "[concat(reference(variables('functionsResourceId'), '2018-02-01').hostNames[0], 'runtime/webhooks/EventGridExtensionConfig?functionName=RegistrationConsumer')]"
+          }
+        },
+        "filter": {
+          "subjectEndsWith": "registration"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('functionsApiAppName'))]"
+      ]
+    },
+    {
+      "name": "[concat(parameters('eventGridTopicName'), '/Microsoft.EventGrid/SendEventConsumer')]",
+      "type": "Microsoft.EventGrid/topics/providers/eventSubscriptions",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2018-01-01",
+      "properties": {
+        "destination": {
+          "endpointType": "WebHook",
+          "properties": {
+            "endpointUrl": "[concat(reference(variables('functionsResourceId'), '2018-02-01').hostNames[0], 'runtime/webhooks/EventGridExtensionConfig?functionName=SendEventConsumer')]"
+          }
+        },
+        "filter": {
+          "subjectEndsWith": "event"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('functionsApiAppName'))]"
+      ]
+    }
+  ],
+  "outputs": {}
+}

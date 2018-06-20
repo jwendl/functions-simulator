@@ -240,7 +240,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', parameters('functionsApiAppName'))]"
+        "[resourceId('Microsoft.Web/sites', parameters('functionsApiAppName'))]",
+        "[resourceId('Microsoft.Web/sites/sourcecontrols', parameters('functionsApiAppName'), 'web')]"
       ]
     },
     {
@@ -260,7 +261,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', parameters('functionsApiAppName'))]"
+        "[resourceId('Microsoft.Web/sites', parameters('functionsApiAppName'))]",
+        "[resourceId('Microsoft.Web/sites/sourcecontrols', parameters('functionsApiAppName'), 'web')]"
       ]
     }
   ],

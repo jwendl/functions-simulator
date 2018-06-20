@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceSimulationApp", "DeviceSimulationApp\DeviceSimulationApp.csproj", "{97F18602-780C-41EC-A049-A186B4F9970F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{97F18602-780C-41EC-A049-A186B4F9970F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97F18602-780C-41EC-A049-A186B4F9970F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97F18602-780C-41EC-A049-A186B4F9970F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97F18602-780C-41EC-A049-A186B4F9970F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E08767FF-4033-4590-A5FB-EA134AAF4600}
+	EndGlobalSection
+EndGlobal

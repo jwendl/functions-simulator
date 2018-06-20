@@ -1,6 +1,4 @@
 using DeviceSimulationApp.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.EventGrid;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
@@ -10,22 +8,31 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace DeviceSimulationApp
 {
-    public static class RegistrationGenerator
+    public static class RegistrationBackgroundWorker
     {
         [FunctionName("RegistrationGenerator")]
-        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, TraceWriter log)
+        public static async Task<HttpResponseMessage> HttpStart([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")]HttpRequestMessage req, [OrchestrationClient]DurableOrchestrationClient durableOrchestrationClient, TraceWriter log)
         {
-            log.Info("C# HTTP trigger function processed a request.");
+            var simulationItems = await req.Content.ReadAsAsync<IEnumerable<SimulationItem>>();
 
-            var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var simulationItems = JsonConvert.DeserializeObject<IEnumerable<SimulationItem>>(requestBody);
+            // Function input comes from the request content.
+            string instanceId = await durableOrchestrationClient.StartNewAsync("RegistrationBackgroundWorker", simulationItems);
 
+            log.Info($"Started orchestration with ID = '{instanceId}'.");
+
+            return durableOrchestrationClient.CreateCheckStatusResponse(req, instanceId);
+        }
+
+        [FunctionName("RegistrationBackgroundWorker")]
+        public static async Task RunOrchestrator([OrchestrationTrigger] DurableOrchestrationContext context)
+        {
+            var simulationItems = context.GetInput<IEnumerable<SimulationItem>>();
             var batchSize = 1000;
             foreach (var simulationItem in simulationItems)
             {
@@ -33,7 +40,8 @@ namespace DeviceSimulationApp
                 for (var batchNumber = 0; batchNumber <= numberOfDevices.Count() / batchSize; batchNumber++)
                 {
                     var eventGridEvents = new List<EventGridEvent>(batchSize);
-                    foreach (var deviceNumber in numberOfDevices)
+                    var deviceNumbers = numberOfDevices.Take(batchSize).Skip(batchNumber);
+                    foreach (var deviceNumber in deviceNumbers)
                     {
                         var deviceId = simulationItem.Id;
                         var deviceItem = new DeviceItem()
@@ -62,8 +70,6 @@ namespace DeviceSimulationApp
                     await SendEventGridEvents(eventGridEvents);
                 }
             }
-
-            return new AcceptedResult();
         }
 
         private static async Task SendEventGridEvents(IList<EventGridEvent> eventGridEvents)

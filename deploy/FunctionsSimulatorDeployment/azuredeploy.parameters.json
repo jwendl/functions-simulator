@@ -13,6 +13,9 @@
     },
     "iotHubSkuName": {
       "value": "S1"
+    },
+    "sourceCodeUri": {
+      "value": "https://github.com/jwendl/functions-simulator"
     }
   }
 }

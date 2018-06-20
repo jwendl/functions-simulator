@@ -37,6 +37,14 @@
       "metadata": {
         "description": "Number of desired IoT Hub units. Restricted to 1 unit for F1. Can be set up to maximum number allowed for subscription."
       }
+    },
+    "sourceCodeUri": {
+      "type": "string",
+      "minLength": 3
+    },
+    "sourceCodeBranch": {
+      "type": "string",
+      "defaultValue": "master"
     }
   },
   "variables": {
@@ -122,6 +130,19 @@
             "[resourceId('Microsoft.Web/sites', parameters('functionsApiAppName'))]",
             "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]"
           ]
+        },
+        {
+          "apiVersion": "2015-08-01",
+          "name": "web",
+          "type": "sourcecontrols",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites/', parameters('functionsApiAppName'))]"
+          ],
+          "properties": {
+            "RepoUrl": "[parameters('sourceCodeUri')]",
+            "branch": "[parameters('sourceCodeBranch')]",
+            "IsManualIntegration": false
+          }
         }
       ],
       "dependsOn": [
@@ -211,7 +232,7 @@
         "destination": {
           "endpointType": "WebHook",
           "properties": {
-            "endpointUrl": "[concat(reference(variables('functionsResourceId'), '2018-02-01').hostNames[0], 'runtime/webhooks/EventGridExtensionConfig?functionName=RegistrationConsumer')]"
+            "endpointUrl": "[concat('https://', variables('functionsResourceId'), '.azurewebsites.net/runtime/webhooks/EventGridExtensionConfig?functionName=RegistrationConsumer')]"
           }
         },
         "filter": {
@@ -231,7 +252,7 @@
         "destination": {
           "endpointType": "WebHook",
           "properties": {
-            "endpointUrl": "[concat(reference(variables('functionsResourceId'), '2018-02-01').hostNames[0], 'runtime/webhooks/EventGridExtensionConfig?functionName=SendEventConsumer')]"
+            "endpointUrl": "[concat('https://', variables('functionsResourceId'), '.azurewebsites.net/runtime/webhooks/EventGridExtensionConfig?functionName=SendEventConsumer')]"
           }
         },
         "filter": {

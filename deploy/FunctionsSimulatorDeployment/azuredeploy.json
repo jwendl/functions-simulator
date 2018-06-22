@@ -48,9 +48,13 @@
     }
   },
   "variables": {
-    "applicationInsightsLocation": "westus2",
+    "storageAccountName": "[concat(parameters('functionsApiAppName'), 'storage')]",
     "applicationInsightsName": "[concat(parameters('functionsApiAppName'), 'ai')]",
     "functionsAppServicePlanName": "[concat(parameters('functionsApiAppName'), 'fnasp')]",
+    "storageAccountType": "Standard_LRS",
+    "iotHubResourceId": "[resourceId(resourceGroup().name, 'Microsoft.Devices/iotHubs',parameters('iotHubName'))]",
+    "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), 'iothubowner')]",
+    "applicationInsightsLocation": "westus2",
     "eventGridTopicResourceId": "[resourceId(resourceGroup().name, 'Microsoft.EventGrid/topics', parameters('eventGridTopicName'))]",
     "functionsResourceId": "[resourceId(resourceGroup().name, 'Microsoft.Web/sites', parameters('functionsApiAppName'))]",
     "d2cMessageRetentionInDaysPeriod": "1",
@@ -62,6 +66,17 @@
     "c2dFeedbackMessagesLockDurationAsIso8601": "PT60S"
   },
   "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('storageAccountName')]",
+      "apiVersion": "2016-01-01",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "[variables('storageAccountType')]"
+      },
+      "kind": "Storage",
+      "properties": {}
+    },
     {
       "name": "[parameters('eventGridTopicName')]",
       "type": "Microsoft.EventGrid/topics",
@@ -121,14 +136,21 @@
           "type": "config",
           "apiVersion": "2014-11-01",
           "properties": {
-            "FUNCTIONS_EXTENSION_VERSION": "2.0.11651-alpha",
+            "FUNCTIONS_EXTENSION_VERSION": "beta",
             "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2014-04-01').InstrumentationKey]",
-            "EventGridTopicEndpoint": "[reference(variables('eventGridTopicResourceId'), '2018-01-01').endpoint]",
-            "EventGridTopicKey": "[listKeys(variables('eventGridTopicResourceId'), '2018-01-01').key1]"
+            "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountName'),'2015-05-01-preview').key1)]",
+            "AzureWebJobsDashboard": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountName'),'2015-05-01-preview').key1)]",
+            "DurableTaskStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountName'),'2015-05-01-preview').key1)]",
+            "IoTHubConnectionString": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=iothubowner;SharedAccessKey=', listkeys(variables('iotHubKeyResource'), '2016-02-03').primaryKey)]",
+            "IoTHubName": "jwfunciothub",
+            "TopicEndpoint": "[reference(variables('eventGridTopicResourceId'), '2018-01-01').endpoint]",
+            "TopicKey": "[listKeys(variables('eventGridTopicResourceId'), '2018-01-01').key1]"
           },
           "dependsOn": [
             "[resourceId('Microsoft.Web/sites', parameters('functionsApiAppName'))]",
-            "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]"
+            "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]",
+            "[resourceId('Microsoft.Devices/iotHubs', parameters('iotHubName'))]",
+            "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
           ]
         },
         {
@@ -153,6 +175,7 @@
       "apiVersion": "2016-02-03",
       "location": "[resourceGroup().location]",
       "name": "[parameters('iotHubName')]",
+      "type": "Microsoft.Devices/iotHubs",
       "properties": {
         "eventHubEndpoints": {
           "events": {
@@ -220,8 +243,7 @@
       "sku": {
         "name": "[parameters('iotHubSkuName')]",
         "capacity": "[parameters('iotHubCapacityUnits')]"
-      },
-      "type": "Microsoft.Devices/iotHubs"
+      }
     },
     {
       "name": "[concat(parameters('eventGridTopicName'), '/Microsoft.EventGrid/RegistrationSubscription')]",
@@ -232,7 +254,7 @@
         "destination": {
           "endpointType": "WebHook",
           "properties": {
-            "endpointUrl": "[concat('https://', variables('functionsResourceId'), '.azurewebsites.net/runtime/webhooks/EventGridExtensionConfig?functionName=RegistrationConsumer')]"
+            "endpointUrl": "https://jwfunsimulator.azurewebsites.net/runtime/webhooks/EventGridExtensionConfig?functionName=RegistrationConsumer&code=OjysA37pLPrmlQQPcnlkgXlQJsynDETCs0agCmT8V8u/TaaQnJ1w9A=="
           }
         },
         "filter": {
@@ -253,7 +275,7 @@
         "destination": {
           "endpointType": "WebHook",
           "properties": {
-            "endpointUrl": "[concat('https://', variables('functionsResourceId'), '.azurewebsites.net/runtime/webhooks/EventGridExtensionConfig?functionName=SendEventConsumer')]"
+            "endpointUrl": "https://jwfunsimulator.azurewebsites.net/runtime/webhooks/EventGridExtensionConfig?functionName=SendEventConsumer&code=OjysA37pLPrmlQQPcnlkgXlQJsynDETCs0agCmT8V8u/TaaQnJ1w9A=="
           }
         },
         "filter": {

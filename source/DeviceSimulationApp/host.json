@@ -1,2 +1,5 @@
 {
+  "durableTask": {
+    "azureStorageConnectionStringName": "DurableTaskStorage"
+  }
 }

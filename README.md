@@ -48,6 +48,27 @@ curl --request GET \
 ]'
 ```
 
+## Example local.settings.json
+
+We don't "commit" this into the repo, so be sure to create this file and add the following json to it.
+
+``` json
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "___",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AzureWebJobsDashboard": "UseDevelopmentStorage=true",
+    "DurableTaskStorage": "UseDevelopmentStorage=true",
+    "IoTHubConnectionString": "___",
+    "IoTHubName": "___",
+    "TopicEndpoint": "___",
+    "TopicKey": "___"
+  }
+}
+```
+
 ## How to run the application
 
 1. Click on "Deploy to Azure" above.

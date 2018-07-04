@@ -22,7 +22,7 @@ namespace DeviceSimulationApp
     /// </summary>
     /// <remarks>
     /// Default URL for triggering event grid function in the local environment.
-    /// http://localhost:7071/runtime/webhooks/EventGridExtensionConfig?functionName={functionname}
+    /// http://localhost:7071/runtime/webhooks/EventGridExtensionConfig?functionName=RegistrationConsumer
     /// </remarks>
     public static class RegistrationConsumer
     {
@@ -30,10 +30,8 @@ namespace DeviceSimulationApp
         public static async Task Run([EventGridTrigger]EventGridEvent eventGridEvent, TraceWriter log)
         {
             var iotHubConnectionString = Environment.GetEnvironmentVariable("IoTHubConnectionString");
-            var jsonBody = eventGridEvent.Data.ToString();
-            log.Info(jsonBody);
+            var deviceItem = JsonConvert.DeserializeObject<DeviceItem>(eventGridEvent.Data.ToString());
 
-            var deviceItem = JsonConvert.DeserializeObject<DeviceItem>(jsonBody);
             var registryManager = RegistryManager.CreateFromConnectionString(iotHubConnectionString);
             await AddDeviceAsync(registryManager, deviceItem, log);
             await UpdateTwinAsync(registryManager, deviceItem, log);

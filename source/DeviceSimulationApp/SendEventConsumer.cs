@@ -6,6 +6,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Azure.WebJobs.Host;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,19 +20,45 @@ namespace DeviceSimulationApp
     /// </summary>
     /// <remarks>
     /// Default URL for triggering event grid function in the local environment.
-    /// http://localhost:7071/runtime/webhooks/EventGridExtensionConfig?functionName={functionname}
+    /// http://localhost:7071/runtime/webhooks/EventGridExtensionConfig?functionName=SendEventConsumer
     /// </remarks>
     public static class SendEventConsumer
     {
         [FunctionName("SendEventConsumer")]
         public static async Task Run([EventGridTrigger]EventGridEvent eventGridEvent, TraceWriter log)
         {
-            var jsonBody = eventGridEvent.Data.ToString();
-            log.Info(jsonBody);
-
-            var connectedDeviceItem = JsonConvert.DeserializeObject<ConnectedDeviceItem>(jsonBody);
+            var connectedDeviceItem = JsonConvert.DeserializeObject<ConnectedDeviceItem>(eventGridEvent.Data.ToString());
             var deviceClient = DeviceClient.CreateFromConnectionString(connectedDeviceItem.DeviceConnectionString);
 
+            var message = CreateMessageBody(connectedDeviceItem);
+            await deviceClient.SendEventAsync(message);
+
+            var jsonObject = JObject.Parse(connectedDeviceItem.InitialState);
+            var properties = jsonObject.Children<JObject>().Properties();
+            foreach (var property in properties)
+            {
+                if (property.Name == "temperature")
+                {
+
+                }
+            }
+
+            await Task.Delay(connectedDeviceItem.Interval * 1000);
+            var sendEventGridEvent = new EventGridEvent()
+            {
+                Id = Guid.NewGuid().ToString(),
+                EventTime = DateTime.UtcNow,
+                Data = JsonConvert.SerializeObject(connectedDeviceItem),
+                EventType = "sendEvent",
+                Subject = "simulation/devices/event",
+                DataVersion = "1.0",
+            };
+
+            await SendEventGridEvents(new List<EventGridEvent>(1) { sendEventGridEvent });
+        }
+
+        private static Message CreateMessageBody(ConnectedDeviceItem connectedDeviceItem)
+        {
             var eventJson = JsonConvert.SerializeObject(connectedDeviceItem.InitialState);
             var eventJsonBytes = Encoding.UTF8.GetBytes(eventJson);
             var message = new Message(eventJsonBytes);
@@ -52,21 +79,7 @@ namespace DeviceSimulationApp
                 }
             }
 
-            await deviceClient.SendEventAsync(message);
-
-            await Task.Delay(connectedDeviceItem.Interval * 1000);
-
-            var sendEventGridEvent = new EventGridEvent()
-            {
-                Id = Guid.NewGuid().ToString(),
-                EventTime = DateTime.UtcNow,
-                Data = JsonConvert.SerializeObject(connectedDeviceItem),
-                EventType = "sendEvent",
-                Subject = "simulation/devices/event",
-                DataVersion = "1.0",
-            };
-
-            await SendEventGridEvents(new List<EventGridEvent>(1) { sendEventGridEvent });
+            return message;
         }
 
         private static async Task SendEventGridEvents(IList<EventGridEvent> eventGridEvents)

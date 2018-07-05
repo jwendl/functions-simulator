@@ -1,5 +1,60 @@
 #Requires -Version 3.0
 
+<#
+
+.SYNOPSIS
+This powershell script will deploy all necessary resources for an Azure Functions-based IoT Simulator. 
+
+.DESCRIPTION
+This script will deploy all the necessary resources for an Azure Functions-based IoT Simulator.  
+Included resources are:
+    IoT Hub
+    Event Grid Topic
+    App Service
+    Application Insights
+    App Service Plan
+    Storage Account
+
+.EXAMPLE
+./Deploy-AzureResourceGroup.ps1
+
+.PARAMETER ResourceGroupLocation
+    Location of Resource Group for deployment; e.g. `westus2`.
+
+.PARAMETER ResourceGroupName
+    Optional [string] used to customize the name of the deployed resource group. Defaults to `FunctionsSimulatorDeployment`.
+
+.PARAMETER UploadArtifacts
+    Boolean parameter determines wheter or not to use locally mldified assets or deploy artifacts from GitHub.
+    
+.PARAMETER StorageAccountName
+    Optional name for backing stoage account.
+
+.PARAMETER StorageContainerName
+    Optional [string] used to customize the storage container name. Defaults to `{resource-group-name}-stageartifacts`.
+
+.PARAMETER TemplateFile
+    Optional [string] used to customize the name of resource template file to deploy. Defaults to `azuredeploy.json`.
+
+.PARAMETER TemplateParametersFile
+    Optional [string] used to customize the name of the template parameter file to use during deployment. Defaults to `azuredeploy.parameters.json`.
+
+.PARAMETER ArtifactStagingDirectory
+    Optional [string] used to customize the location of artifacts to deploy. Defaults to current directory.
+
+.PARAMETER DSCSourceFolder
+    Optional source folder name for Desired State Configuration assets. 
+
+.PARAMETER ValidateOnly
+    Boolean parameter to only validate the deployment and not actually run it. 
+
+.NOTES
+
+.LINK
+https://github.com/jwendl/functions-simulator
+
+#>
+
 Param(
     [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation,
     [string] $ResourceGroupName = 'FunctionsSimulatorDeployment',

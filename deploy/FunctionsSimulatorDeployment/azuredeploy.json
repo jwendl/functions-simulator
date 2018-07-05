@@ -6,6 +6,9 @@
       "type": "string",
       "minLength": 3
     },
+    "isManualIntegration": {
+      "type": "bool"
+    },
     "functionsApiAppName": {
       "type": "string",
       "minLength": 3
@@ -163,7 +166,7 @@
           "properties": {
             "RepoUrl": "[parameters('sourceCodeUri')]",
             "branch": "[parameters('sourceCodeBranch')]",
-            "IsManualIntegration": false
+            "IsManualIntegration": "[parameters('isManualIntegration')]"
           }
         }
       ],

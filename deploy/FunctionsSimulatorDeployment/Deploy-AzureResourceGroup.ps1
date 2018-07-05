@@ -49,6 +49,8 @@ Included resources are:
     Boolean parameter to only validate the deployment and not actually run it. 
 
 .NOTES
+	To enable GitHub CI/CD integration from a forked repository, open `azuredeploy.parameters.json` and set `isManualIntegration` to false.  
+	See this article for information on adding 3rd party repository credentials to the Azure Portal: https://docs.microsoft.com/azure/app-service/app-service-continuous-deployment#deploy-continuously-from-github
 
 .LINK
 https://github.com/jwendl/functions-simulator

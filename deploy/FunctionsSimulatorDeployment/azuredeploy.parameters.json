@@ -16,6 +16,9 @@
     },
     "sourceCodeUri": {
       "value": "https://github.com/jwendl/functions-simulator"
+    },
+    "manualIntegration": {
+      "value": true
     }
   }
 }

@@ -7,7 +7,11 @@
       "minLength": 3
     },
     "isManualIntegration": {
-      "type": "bool"
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Please see https://docs.microsoft.com/en-us/azure/app-service/app-service-deploy-complex-application-predictably"
+      }
     },
     "functionsApiAppName": {
       "type": "string",
@@ -145,7 +149,7 @@
             "AzureWebJobsDashboard": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountName'),'2015-05-01-preview').key1)]",
             "DurableTaskStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountName'),'2015-05-01-preview').key1)]",
             "IoTHubConnectionString": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=iothubowner;SharedAccessKey=', listkeys(variables('iotHubKeyResource'), '2016-02-03').primaryKey)]",
-            "IoTHubName": "jwfunciothub",
+            "IoTHubName": "[parameters('iotHubName')]",
             "TopicEndpoint": "[reference(variables('eventGridTopicResourceId'), '2018-01-01').endpoint]",
             "TopicKey": "[listKeys(variables('eventGridTopicResourceId'), '2018-01-01').key1]"
           },
@@ -247,48 +251,6 @@
         "name": "[parameters('iotHubSkuName')]",
         "capacity": "[parameters('iotHubCapacityUnits')]"
       }
-    },
-    {
-      "name": "[concat(parameters('eventGridTopicName'), '/Microsoft.EventGrid/RegistrationSubscription')]",
-      "type": "Microsoft.EventGrid/topics/providers/eventSubscriptions",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2018-01-01",
-      "properties": {
-        "destination": {
-          "endpointType": "WebHook",
-          "properties": {
-            "endpointUrl": "https://jwfunsimulator.azurewebsites.net/runtime/webhooks/EventGridExtensionConfig?functionName=RegistrationConsumer&code=OjysA37pLPrmlQQPcnlkgXlQJsynDETCs0agCmT8V8u/TaaQnJ1w9A=="
-          }
-        },
-        "filter": {
-          "subjectEndsWith": "registration"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', parameters('functionsApiAppName'))]",
-        "[resourceId('Microsoft.Web/sites/sourcecontrols', parameters('functionsApiAppName'), 'web')]"
-      ]
-    },
-    {
-      "name": "[concat(parameters('eventGridTopicName'), '/Microsoft.EventGrid/SendEventConsumer')]",
-      "type": "Microsoft.EventGrid/topics/providers/eventSubscriptions",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2018-01-01",
-      "properties": {
-        "destination": {
-          "endpointType": "WebHook",
-          "properties": {
-            "endpointUrl": "https://jwfunsimulator.azurewebsites.net/runtime/webhooks/EventGridExtensionConfig?functionName=SendEventConsumer&code=OjysA37pLPrmlQQPcnlkgXlQJsynDETCs0agCmT8V8u/TaaQnJ1w9A=="
-          }
-        },
-        "filter": {
-          "subjectEndsWith": "event"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', parameters('functionsApiAppName'))]",
-        "[resourceId('Microsoft.Web/sites/sourcecontrols', parameters('functionsApiAppName'), 'web')]"
-      ]
     }
   ],
   "outputs": {}

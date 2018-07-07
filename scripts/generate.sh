@@ -40,3 +40,6 @@ masterKey=``masterKey``
 
 az eventgrid event-subscription create -g $resourceGroupName -n RegistrationConsumer --topic-name $topicName  --endpoint "https://$functionName.azurewebsites.net/runtime/webhooks/EventGridExtensionConfig?functionName=RegistrationConsumer&code=$masterKey"
 az eventgrid event-subscription create -g $resourceGroupName -n SendEventConsumer --topic-name $topicName --endpoint "https://$functionName.azurewebsites.net/runtime/webhooks/EventGridExtensionConfig?functionName=SendEventConsumer&code=$masterKey"
+
+az ad sp delete --id "$clientId"
+

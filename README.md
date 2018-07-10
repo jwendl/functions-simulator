@@ -1,5 +1,7 @@
 # An example device simulator using Azure Functions
 
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgithub.com%2Fjwendl%2Ffunctions-simulator%2Fblob%2Fmaster%2Fdeploy%2FFunctionsSimulatorDeployment%2Fazuredeploy.json)
+
 ## Services used in this example
 
 * [Azure Functions](https://azure.microsoft.com/en-us/services/functions/)

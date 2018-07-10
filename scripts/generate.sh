@@ -42,4 +42,3 @@ az eventgrid event-subscription create -g $resourceGroupName -n RegistrationCons
 az eventgrid event-subscription create -g $resourceGroupName -n SendEventConsumer --topic-name $topicName --endpoint "https://$functionName.azurewebsites.net/runtime/webhooks/EventGridExtensionConfig?functionName=SendEventConsumer&code=$masterKey"
 
 az ad sp delete --id "$clientId"
-

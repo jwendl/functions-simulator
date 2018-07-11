@@ -1,29 +1,100 @@
 grammar DeviceSimulation;
 
-/*
- * Parser Rules
- */
+prog
+	: (line? EOL) + line?
+	;
 
-compileUnit : expression+ EOF;
+line
+	: cmd + comment?
+	| comment
+	;
 
-expression :
-    expression MULTIPLY expression #Multiplication
-    | expression DIVIDE expression #Division
-    | expression ADD expression #Addition
-    | expression SUBTRACT expression #Subtraction
-    | NUMBER #Number
-    ; 
+cmd
+	: start
+	| chance
+	| vary
+	| random
+	;
 
-/*
- * Lexer Rules
- */
+quotedstring
+   : '[' (quotedstring | ~ ']')* ']'
+   ;
 
-NUMBER : INT; //Leave room to extend what kind of math we can do.
+name
+   : STRING
+   ;
 
-INT : ('0'..'9')+;
-MULTIPLY : '*';
-DIVIDE : '/';
-SUBTRACT : '-';
-ADD : '+';
+value
+   : STRINGLITERAL
+   | expression
+   | deref
+   ;
 
-WS : [ \t\r\n] -> channel(HIDDEN);
+signExpression
+   : (('+' | '-'))* (number | deref)
+   ;
+
+multiplyingExpression
+   : signExpression (('*' | '/') signExpression)*
+   ;
+
+expression
+   : multiplyingExpression (('+' | '-') multiplyingExpression)*
+   ;
+
+number
+   : NUMBER
+   ;
+
+comment
+   : COMMENT
+   ;
+
+deref
+   : ':' name
+   ;
+
+start
+	: 'start' expression
+	;
+
+chance
+	: 'chance' expression
+	;
+
+vary
+	: 'vary' expression
+	;
+
+random
+	: 'random'
+	;
+
+STRINGLITERAL
+   : '"' STRING
+   ;
+
+
+STRING
+   : [a-zA-Z] [a-zA-Z0-9_]*
+   ;
+
+
+NUMBER
+   : [0-9] +
+   ;
+
+
+COMMENT
+   : ';' ~ [\r\n]*
+   ;
+
+
+EOL
+   : '\r'? '\n'
+   ;
+
+
+WS
+   : [ \t\r\n] -> skip
+   ;

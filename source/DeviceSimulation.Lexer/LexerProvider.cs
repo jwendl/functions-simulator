@@ -17,8 +17,8 @@ namespace DeviceSimulation.Lexer
             var commonTokenStream = new CommonTokenStream(deviceSimulationLexer);
             var deviceSimulationParser = new DeviceSimulationParser(commonTokenStream);
 
-            var tree = deviceSimulationParser.compileUnit();
-            var visitor = new SimpleDeviceSimulationVisitor();
+            var tree = deviceSimulationParser.prog();
+            var visitor = new ExpressionTreeVisitor();
             return visitor.Visit(tree);
         }
     }

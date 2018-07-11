@@ -10,16 +10,13 @@ namespace DeviceSimulation.Lexer.Tests
             // Essentially start at 72 degrees
             // Set a random offset by 5 degrees + or -
             // Return value
-            var configuration = @"
-START 72;
-OFFSET BY 5;
-RETURN START;
-";
+            var configuration = @"start 72 vary 5";
 
             var lexerProvider = new LexerProvider();
-            var result = lexerProvider.RunLexer(@"3+3");
+            var result = lexerProvider.RunLexer(configuration);
 
-            Assert.Equal(6, result);
+            Assert.NotEqual(0, result);
+            Assert.NotEqual(72, result);
         }
     }
 }

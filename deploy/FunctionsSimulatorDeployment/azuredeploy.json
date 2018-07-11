@@ -155,13 +155,14 @@
           },
           "dependsOn": [
             "[resourceId('Microsoft.Web/sites', parameters('functionsApiAppName'))]",
+            "[resourceId('Microsoft.Web/Sites/sourcecontrols', parameters('functionsApiAppName'), 'web')]",
             "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]",
             "[resourceId('Microsoft.Devices/iotHubs', parameters('iotHubName'))]",
             "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
           ]
         },
         {
-          "apiVersion": "2015-08-01",
+          "apiVersion": "2016-08-01",
           "name": "web",
           "type": "sourcecontrols",
           "dependsOn": [

@@ -1,5 +1,4 @@
 ﻿using Antlr4.Runtime;
-using DeviceSimulation.Lexer.Interfaces;
 using DeviceSimulation.Lexer.Listeners;
 using System.Collections.Generic;
 

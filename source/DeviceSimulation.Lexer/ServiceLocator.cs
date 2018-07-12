@@ -1,6 +1,4 @@
-﻿using DeviceSimulation.Lexer.Interfaces;
-using DeviceSimulation.Lexer.Services;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 
 namespace DeviceSimulation.Lexer

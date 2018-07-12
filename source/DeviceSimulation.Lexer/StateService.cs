@@ -1,10 +1,18 @@
-﻿using DeviceSimulation.Lexer.Interfaces;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DeviceSimulation.Lexer.Services
+namespace DeviceSimulation.Lexer
 {
+    public interface IStateService
+    {
+        void AddOrUpdateValue(string key, object value);
+
+        T GetOrAddValue<T>(string key);
+
+        IDictionary<string, object> ToDictionary();
+    }
+
     public class StateService
         : IStateService
     {

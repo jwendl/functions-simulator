@@ -7,16 +7,35 @@ namespace DeviceSimulation.Lexer.Tests
         [Fact]
         public void SetNewPropertyValue()
         {
-            // Essentially start at 72 degrees
-            // Set a random offset by 5 degrees + or -
-            // Return value
-            var configuration = @"start 72 vary 5";
+            /*
+             * Examples
+begin
+    let a be 5
+    let b be 10
+    add 3 to b
+    add b to a
+    add a to b
+    print b
+    print 3
+end
+             */
+            var configuration = @"begin
+    let a be 3
+    let b be 5
+    add 3 to b
+    add b to a
+    print b
+    print a
+end";
 
             var lexerProvider = new LexerProvider();
             var result = lexerProvider.RunLexer(configuration);
 
-            Assert.NotEqual(0, result);
-            Assert.NotEqual(72, result);
+            var a = result["a"];
+            var b = result["b"];
+
+            Assert.Equal(11d, a);
+            Assert.Equal(8d, b);
         }
     }
 }

@@ -1,29 +1,13 @@
 grammar DeviceSimulation;
 
-/*
- * Parser Rules
- */
+// Grammar
+program   : 'begin' statement+ 'end';
+statement : assign | add | print ;
+assign    : 'let' ID 'be' (NUMBER | ID) ;
+print     : 'print' (NUMBER | ID) ;
+add       : 'add' (NUMBER | ID) 'to' ID ;
 
-compileUnit : expression+ EOF;
-
-expression :
-    expression MULTIPLY expression #Multiplication
-    | expression DIVIDE expression #Division
-    | expression ADD expression #Addition
-    | expression SUBTRACT expression #Subtraction
-    | NUMBER #Number
-    ; 
-
-/*
- * Lexer Rules
- */
-
-NUMBER : INT; //Leave room to extend what kind of math we can do.
-
-INT : ('0'..'9')+;
-MULTIPLY : '*';
-DIVIDE : '/';
-SUBTRACT : '-';
-ADD : '+';
-
-WS : [ \t\r\n] -> channel(HIDDEN);
+// Lexer
+ID     : [a-z]+ ;
+NUMBER : [0-9]+ ;
+WS     : [ \n\t]+ -> skip;

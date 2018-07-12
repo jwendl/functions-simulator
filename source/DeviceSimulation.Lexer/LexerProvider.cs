@@ -1,5 +1,6 @@
 ﻿using Antlr4.Runtime;
-using DeviceSimulation.Lexer.Visitors;
+using DeviceSimulation.Lexer.Listeners;
+using System.Collections.Generic;
 
 namespace DeviceSimulation.Lexer
 {
@@ -10,16 +11,20 @@ namespace DeviceSimulation.Lexer
 
     public class LexerProvider
     {
-        public object RunLexer(string configuration)
+        public IDictionary<string, object> RunLexer(string configuration)
         {
+            ServiceLocator.BuildServiceProvider();
+
             var antlrInputStream = new AntlrInputStream(configuration);
             var deviceSimulationLexer = new DeviceSimulationLexer(antlrInputStream);
             var commonTokenStream = new CommonTokenStream(deviceSimulationLexer);
             var deviceSimulationParser = new DeviceSimulationParser(commonTokenStream);
+            deviceSimulationParser.AddParseListener(new DeviceListener());
 
-            var tree = deviceSimulationParser.compileUnit();
-            var visitor = new SimpleDeviceSimulationVisitor();
-            return visitor.Visit(tree);
+            deviceSimulationParser.program();
+
+            var stateService = ServiceLocator.GetRequiredService<IStateService>();
+            return stateService.ToDictionary();
         }
     }
 }

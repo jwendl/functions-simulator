@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Antlr4" Version="4.6.5-rc002" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
   </ItemGroup>
 
   <ItemGroup>

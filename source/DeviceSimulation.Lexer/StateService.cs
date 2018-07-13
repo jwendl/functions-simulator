@@ -27,7 +27,8 @@ namespace DeviceSimulation.Lexer
         {
             values.AddOrUpdate(key, value, (k, v) =>
             {
-                return values.GetOrAdd(k, v);
+                values[key] = value;
+                return values[key];
             });
         }
 

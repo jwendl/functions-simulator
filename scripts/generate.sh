@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Usage ./generate.sh -g FunctionDeployToAzure -f jwfdafunapi
+
 # Setup variables...
 while [[ "$#" > 0 ]]; do case $1 in
   -g|--resource-group) resourceGroupName="$2"; shift;;
@@ -13,11 +15,8 @@ subscriptionId=`az account show --query "id" |  tr -d '"'`
 rbac=`az ad sp create-for-rbac --scopes /subscriptions/$subscriptionId/resourceGroups/$resourceGroupName --query "{ clientId:appId, clientSecret:password, tenantId:tenant }"`
 
 clientId=./jq-linux64 -r '.clientId'
-echo $clientId
-exit 1
-
-clientSecret=``clientSecret``
-tenantId=``tenantId``
+clientSecret=./jq-linux64 -r '.clientSecret'
+tenantId=./jq-linux64 -r '.tenantId'
 
 # Get access token from Azure AD
 accessToken=$(curl -s --header "accept: application/json" --request POST "https://login.windows.net/$tenantId/oauth2/token" --data-urlencode "resource=https://management.core.windows.net/" --data-urlencode "client_id=$clientId" --data-urlencode "grant_type=client_credentials" --data-urlencode "client_secret=$clientSecret" | jq -r '.access_token')
@@ -31,9 +30,7 @@ managementEndpointUri="https://management.azure.com$functionId/functions/admin/m
 
 masterKeyResponse=`curl -s --header "accept: application/json" --header "Authorization: BEARER $accessToken" --request GET $managementEndpointUri`
 
-tickParse "$masterKeyResponse"
-
-masterKey=``masterKey``
+masterKey=./jq-linux64 -r '.masterKey'
 
 az eventgrid event-subscription create -g $resourceGroupName -n RegistrationConsumer --topic-name $topicName  --endpoint "https://$functionName.azurewebsites.net/runtime/webhooks/EventGridExtensionConfig?functionName=RegistrationConsumer&code=$masterKey"
 az eventgrid event-subscription create -g $resourceGroupName -n SendEventConsumer --topic-name $topicName --endpoint "https://$functionName.azurewebsites.net/runtime/webhooks/EventGridExtensionConfig?functionName=SendEventConsumer&code=$masterKey"

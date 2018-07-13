@@ -34,9 +34,13 @@ namespace DeviceSimulation.Lexer.Listeners
                 double addedDouble = 0;
                 if (double.TryParse(context.NUMBER().GetText(), out addedDouble))
                 {
-                    if (variables[variableName] is double currentValue)
+                    if (variables[variableName] is double currentDouble)
                     {
-                        AddOrSetValue(variableName, currentValue + addedDouble);
+                        AddOrSetValue(variableName, currentDouble + addedDouble);
+                    }
+                    else if (variables[variableName] is int currentInt)
+                    {
+                        AddOrSetValue(variableName, currentInt + addedDouble);
                     }
                 }
             }

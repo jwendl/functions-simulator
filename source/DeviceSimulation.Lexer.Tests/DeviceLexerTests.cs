@@ -36,7 +36,7 @@ end";
 
             var actual = result["temperature"];
 
-            Assert.Equal(properties["temperature"], actual);
+            Assert.Equal(73d, actual);
         }
     }
 }

@@ -33,20 +33,22 @@ curl --request GET \
   --url http://localhost:7071/api/RegistrationGenerator \
   --header 'content-type: application/json' \
   --data '[
-    {
-        "id": "bf9260c5-54ff-436c-933c-9cb26f7a3121",
-        "name": "Fridge Simulation",
-        "deviceNamePattern": "Fridge-{0}-{1}",
-        "deviceType": "Fridge",
-        "messageType": "Telemetry",
-        "initialState": "{ '\''temperature'\'': 70 }",
-        "deviceInterval": 1,
-        "numberOfDevices": 1,
-        "propertyValues": {
-            "temperature": "3+3"
-        },
-        "properties": {}
-    }
+        {
+                "id": "bf9260c5-54ff-436c-933c-9cb26f7a3121",
+                "name": "Fridge Simulation",
+                "deviceNamePattern": "Fridge-{0}-{1}",
+                "deviceType": "Fridge",
+                "messageType": "Telemetry",
+                "initialState": "{ ''temperature'': 70 }",
+                "deviceInterval": 1,
+                "numberOfDevices": 1,
+                "configuration": [
+                        "begin",
+                                "add 5 to temperature",
+                        "end"
+                ],
+                "properties": {}
+        }
 ]'
 ```
 

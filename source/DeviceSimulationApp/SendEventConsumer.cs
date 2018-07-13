@@ -1,3 +1,5 @@
+using DeviceSimulation.Lexer;
+using DeviceSimulationApp.Extensions;
 using DeviceSimulationApp.Models;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.EventGrid;
@@ -27,21 +29,17 @@ namespace DeviceSimulationApp
         [FunctionName("SendEventConsumer")]
         public static async Task Run([EventGridTrigger]EventGridEvent eventGridEvent, TraceWriter log)
         {
+            var lexerProvider = ServiceLocator.GetRequiredService<ILexerProvider>();
             var connectedDeviceItem = JsonConvert.DeserializeObject<ConnectedDeviceItem>(eventGridEvent.Data.ToString());
             var deviceClient = DeviceClient.CreateFromConnectionString(connectedDeviceItem.DeviceConnectionString);
 
             var message = CreateMessageBody(connectedDeviceItem);
             await deviceClient.SendEventAsync(message);
 
+            var configuration = connectedDeviceItem.Configuration;
             var jsonObject = JObject.Parse(connectedDeviceItem.InitialState);
-            var properties = jsonObject.Children<JObject>().Properties();
-            foreach (var property in properties)
-            {
-                if (property.Name == "temperature")
-                {
-
-                }
-            }
+            var properties = jsonObject.ToDictionary();
+            properties = lexerProvider.RunLexer(properties, String.Join(Environment.NewLine, configuration));
 
             await Task.Delay(connectedDeviceItem.Interval * 1000);
             var sendEventGridEvent = new EventGridEvent()

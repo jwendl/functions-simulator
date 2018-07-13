@@ -11,6 +11,7 @@ namespace DeviceSimulation.Lexer
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddScoped<IStateService, StateService>();
+            serviceCollection.AddScoped<ILexerProvider, LexerProvider>();
             serviceProvider = serviceCollection.BuildServiceProvider();
         }
 

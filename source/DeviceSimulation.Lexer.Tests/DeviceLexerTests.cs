@@ -20,11 +20,13 @@ begin
     print 3
 end
              */
+
+            ServiceLocator.BuildServiceProvider();
             var configuration = @"begin
     add 3 to temperature
 end";
 
-            var lexerProvider = new LexerProvider();
+            var lexerProvider = ServiceLocator.GetRequiredService<ILexerProvider>();
             var properties = new Dictionary<string, object>
             {
                 { "temperature", 70 }

@@ -19,5 +19,7 @@ namespace DeviceSimulationApp.Models
         public int Interval { get; set; }
 
         public Dictionary<string, string> Properties { get; set; }
+
+        public IEnumerable<string> Configuration { get; set; }
     }
 }

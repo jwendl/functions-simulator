@@ -1,14 +1,10 @@
 #!/bin/bash
 
-# For Json Parsing
-wget https://raw.githubusercontent.com/kristopolous/TickTick/master/ticktick.sh -O ticktick.sh -q
-. ticktick.sh
-
 # Setup variables...
-
-# Make these parameters?
-resourceGroupName='FunctionsSimulatorDeployment'
-functionName='jwfunsimulator'
+while [[ "$#" > 0 ]]; do case $1 in
+  -g|--resource-group) resourceGroupName="$2"; shift;;
+  -f|--function-name) functionName="$2"; shift;
+esac; shift; done
 
 # Rest we can figure out...
 functionId=`az functionapp show -g $resourceGroupName -n $functionName --query "id" | tr -d '"'`
@@ -16,9 +12,10 @@ topicName=`az eventgrid topic list --query "[0].name" | tr -d '"'`
 subscriptionId=`az account show --query "id" |  tr -d '"'`
 rbac=`az ad sp create-for-rbac --scopes /subscriptions/$subscriptionId/resourceGroups/$resourceGroupName --query "{ clientId:appId, clientSecret:password, tenantId:tenant }"`
 
-tickParse "$rbac"
+clientId=./jq-linux64 -r '.clientId'
+echo $clientId
+exit 1
 
-clientId=``clientId``
 clientSecret=``clientSecret``
 tenantId=``tenantId``
 

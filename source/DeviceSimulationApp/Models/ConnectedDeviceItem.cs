@@ -19,6 +19,7 @@ namespace DeviceSimulationApp.Models
             CurrentState = deviceItem.CurrentState;
             Interval = deviceItem.Interval;
             Properties = deviceItem.Properties;
+            Configuration = deviceItem.Configuration;
         }
 
         public string Id { get; set; }
@@ -36,6 +37,8 @@ namespace DeviceSimulationApp.Models
         public int Interval { get; set; }
 
         public Dictionary<string, string> Properties { get; set; }
+
+        public IEnumerable<string> Configuration { get; set; }
 
         public string DeviceConnectionString { get; set; }
     }

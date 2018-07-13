@@ -6,10 +6,11 @@ namespace DeviceSimulation.Lexer
 {
     public interface ILexerProvider
     {
-        IDictionary<string, object> RunLexer(string json, string configuration);
+        IDictionary<string, object> RunLexer(IDictionary<string, object> json, string configuration);
     }
 
     public class LexerProvider
+        : ILexerProvider
     {
         public IDictionary<string, object> RunLexer(IDictionary<string, object> properties, string configuration)
         {

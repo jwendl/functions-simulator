@@ -22,5 +22,7 @@ namespace DeviceSimulationApp.Models
         public int NumberOfDevices { get; set; }
 
         public Dictionary<string, string> Properties { get; set; }
+
+        public IEnumerable<string> Configuration { get; set; }
     }
 }

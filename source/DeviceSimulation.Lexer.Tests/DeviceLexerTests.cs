@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System.Collections.Generic;
+using Xunit;
 
 namespace DeviceSimulation.Lexer.Tests
 {
@@ -20,22 +21,20 @@ begin
 end
              */
             var configuration = @"begin
-    let a be 3
-    let b be 5
-    add 3 to b
-    add b to a
-    print b
-    print a
+    add 3 to temperature
 end";
 
             var lexerProvider = new LexerProvider();
-            var result = lexerProvider.RunLexer(configuration);
+            var properties = new Dictionary<string, object>
+            {
+                { "temperature", 70 }
+            };
 
-            var a = result["a"];
-            var b = result["b"];
+            var result = lexerProvider.RunLexer(properties, configuration);
 
-            Assert.Equal(11d, a);
-            Assert.Equal(8d, b);
+            var actual = result["temperature"];
+
+            Assert.Equal(properties["temperature"], actual);
         }
     }
 }

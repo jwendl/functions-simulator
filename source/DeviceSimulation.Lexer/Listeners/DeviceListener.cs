@@ -7,11 +7,11 @@ namespace DeviceSimulation.Lexer.Listeners
     public class DeviceListener
         : DeviceSimulationBaseListener
     {
-        private readonly IDictionary<string, double> variables;
+        private readonly IDictionary<string, object> variables;
 
         public DeviceListener()
         {
-            variables = new Dictionary<string, double>();
+            variables = new Dictionary<string, object>();
         }
 
         public override void ExitAdd([NotNull] DeviceSimulationParser.AddContext context)
@@ -20,13 +20,25 @@ namespace DeviceSimulation.Lexer.Listeners
             {
                 var variableName = context.ID(1).GetText();
                 var variableValue = variables[context.ID(0).GetText()];
-                AddOrSetValue(variableName, variables[variableName] + variableValue);
+                if (variables.ContainsKey(variableName))
+                {
+                    if (variableValue is double addedValue && variables[variableName] is double currentValue)
+                    {
+                        AddOrSetValue(variableName, currentValue + addedValue);
+                    }
+                }
             }
             else
             {
                 var variableName = context.ID(0).GetText();
-                var variableValue = Int32.Parse(context.NUMBER().GetText());
-                AddOrSetValue(variableName, variables[variableName] + variableValue);
+                double addedDouble = 0;
+                if (double.TryParse(context.NUMBER().GetText(), out addedDouble))
+                {
+                    if (variables[variableName] is double currentValue)
+                    {
+                        AddOrSetValue(variableName, currentValue + addedDouble);
+                    }
+                }
             }
         }
 
@@ -36,13 +48,31 @@ namespace DeviceSimulation.Lexer.Listeners
             if (context.ID().Length > 1)
             {
                 var variableValue = context.ID(1).GetText();
-                AddOrSetValue(variableName, variables[variableValue]);
+                if (variables.ContainsKey(variableName))
+                {
+                    if (variables[variableName] is double currentValue)
+                    {
+                        AddOrSetValue(variableName, currentValue);
+                    }
+                }
             }
             else
             {
                 var variableValue = context.NUMBER().GetText();
                 AddOrSetValue(variableName, Int32.Parse(variableValue));
             }
+        }
+
+        public override void EnterProgram([NotNull] DeviceSimulationParser.ProgramContext context)
+        {
+            var stateService = ServiceLocator.GetRequiredService<IStateService>();
+            var properties = stateService.ToDictionary();
+            foreach (var kvp in properties)
+            {
+                variables.Add(kvp.Key, kvp.Value);
+            }
+
+            base.EnterProgram(context);
         }
 
         public override void ExitProgram([NotNull] DeviceSimulationParser.ProgramContext context)

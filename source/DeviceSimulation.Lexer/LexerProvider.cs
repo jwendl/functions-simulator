@@ -6,14 +6,17 @@ namespace DeviceSimulation.Lexer
 {
     public interface ILexerProvider
     {
-        object RunLexer(string configuration);
+        IDictionary<string, object> RunLexer(string json, string configuration);
     }
 
     public class LexerProvider
     {
-        public IDictionary<string, object> RunLexer(string configuration)
+        public IDictionary<string, object> RunLexer(IDictionary<string, object> properties, string configuration)
         {
             ServiceLocator.BuildServiceProvider();
+
+            var stateService = ServiceLocator.GetRequiredService<IStateService>();
+            foreach (var kvp in properties) stateService.AddOrUpdateValue(kvp.Key, kvp.Value);
 
             var antlrInputStream = new AntlrInputStream(configuration);
             var deviceSimulationLexer = new DeviceSimulationLexer(antlrInputStream);
@@ -23,7 +26,6 @@ namespace DeviceSimulation.Lexer
 
             deviceSimulationParser.program();
 
-            var stateService = ServiceLocator.GetRequiredService<IStateService>();
             return stateService.ToDictionary();
         }
     }
